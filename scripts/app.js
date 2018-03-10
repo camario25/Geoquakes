@@ -12,7 +12,8 @@ $(document).ready(function() {
         url: weekly_quakes_endpoint,
         success: function(json) {
           // console.log(`sent back ${json.metadata.count}`);
-          findFeature(json)
+          findFeature(json);
+          mapMarker(json);
           // console.log(json.features[0].properties.title)
           // $("#info").html(json.metadata.count);
         },
@@ -29,58 +30,78 @@ $(document).ready(function() {
   var findFeature = function (json) {
       console.log(json.metadata.count);
     $(json.features).each(function (index, feature) {
-      var titles = feature.properties.title;
-    console.log(titles);
-    console.log(index);
-    $('#info').append(`<p>${titles}<p>`);
-  });
-};
+        var titles = feature.properties.title;
+        console.log(titles);
+        console.log(index);
+      $('#info').append(`<p>${titles}<p>`);
 
-// First, create an object containing LatLng and population for each city.
-  var citymap = {
-    chicago: {
-      center: {lat: 41.878, lng: -87.629},
-      population: 2714856
-    },
-    newyork: {
-      center: {lat: 40.714, lng: -74.005},
-      population: 8405837
-    },
-    losangeles: {
-      center: {lat: 34.052, lng: -118.243},
-      population: 3857799
-    },
-    vancouver: {
-      center: {lat: 49.25, lng: -123.1},
-      population: 603502
-    }
+    });
+
   };
-  
-var map;
-function initMap() {
-  map = new google.maps.Map(document.getElementById('map'), {
-    center: {lat: 37.78, lng: -122.44},
-    zoom: 3
-      });
-    // Construct the circle for each value in citymap.
-    // Note: We scale the area of the circle based on the population.
-    for (var city in citymap) {
-      // Add the circle for this city to the map.
-      var cityCircle = new google.maps.Circle({
-        strokeColor: '#FF0000',
-        strokeOpacity: 0.8,
-        strokeWeight: 2,
-        fillColor: '#FF0000',
-        fillOpacity: 0.35,
-        map: map,
-        center: citymap[city].center,
-        radius: Math.sqrt(citymap[city].population) * 100
-      });
-  }
-}
+  var mapMarker = function (json) {
+    console.log('test');
+    $(json.features).each(function (index, feature) {
+      let marker = new google.maps.Marker({
+    position: {
+      lat: feature.geometry.coordinates[1],
+      lng: feature.geometry.coordinates[0]
+      },
+    map: map,
+    title: feature.properties.title,
+    icon: {
+      url: "images/earthquake.png",
+      scaledSize: {height: 40, width: 40}
+      }
+    });
+      let infowindow = new google.maps.InfoWindow({
+      content: feature.properties.title
+    });
+    marker.addListener('click', function() {
+      infowindow.open(map, marker);
+    });
+    });
+  };
 
-
-  
-initMap();
 });
-
+// 
+// var weekly_quakes_endpoint = "http://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson";
+// 
+// $(document).ready(function() {
+//   console.log("Let's get coding!");
+//   let map = new google.maps.Map(document.getElementById('map'), {
+//     center: {lat: 37.78, lng: -122.44},
+//     zoom: 3
+//   });
+//   $.ajax({
+//     url: weekly_quakes_endpoint,
+//     method: "GET",
+//     success: function(data) {
+//       // debugger;
+//       // data.features[0].properties.title
+//       for(let i = 0; i < data.features.length; i++) {
+//         let time = ((Date.now() - data.features[i].properties.time) / 60 / 60 / 1000).toFixed(2);
+//         $("#info").append(`<p>${data.features[i].properties.title} / ${time} hours ago</p>`);
+//         let marker = new google.maps.Marker({
+//           position: {
+//             lat: data.features[i].geometry.coordinates[1],
+//             lng: data.features[i].geometry.coordinates[0]
+//           },
+//           map: map,
+//           title: data.features[i].properties.title,
+//           icon: {
+//             url: "images/earthquake.png",
+//             scaledSize: {height: 40, width: 40}
+//           }
+//         });
+//         let infowindow = new google.maps.InfoWindow({
+//           content: data.features[i].properties.title
+//         });
+//         marker.addListener('click', function() {
+//           infowindow.open(map, marker);
+//         });
+//       }
+//     }
+//   });
+// 
+// });
+// 
